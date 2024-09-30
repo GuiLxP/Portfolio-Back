@@ -15,7 +15,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-backend_url = 'https://portfolio-back-mtje.onrender.com/PROFILE_DATA'
+backend_url = os.getenv('BACKEND_URL')
 
 
 def restart_server():
