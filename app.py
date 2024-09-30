@@ -5,12 +5,36 @@ from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from flask_cors import CORS
+import schedule
+import time
+import requests
+import threading
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
+backend_url = 'https://portfolio-back-mtje.onrender.com/PROFILE_DATA'
+
+
+def restart_server():
+    try:
+        response = requests.get(backend_url)
+        if response.status_code == 200:
+            print('Server restarted successfully')
+        else:
+            print(f'Failed to restart server. Status code: {response.status_code}')
+    except requests.exceptions.RequestException as e:    
+        print(f'Error during server restart: {e}')
+
+
+schedule.every(14).minutes.do(restart_server)
+
+def run_schedule():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 @app.route('/PROFILE_DATA', methods=['GET'])
 def profile_data_fn():
@@ -140,4 +164,8 @@ def send_email():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug_mode = os.getenv('FLASK_DEBUG', 'false').lower() in ['true', '1']
+
+    schedule_thread = threading.Thread(target=run_schedule)
+    schedule_thread.start()
+
     app.run(host='0.0.0.0', port=port, debug=debug_mode)
